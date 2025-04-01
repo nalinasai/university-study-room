@@ -41,6 +41,8 @@ class student_details{
         catch(IOException e){
             System.out.println(e.getMessage());
         }
+
+        System.out.println("Your seat is reserved.");
     }
 }
 
@@ -138,8 +140,25 @@ public class studyroom{
             }
 
         }
-        System.out.print("Enter the  seat number you want: ");
-        int seat_num_input = scan.nextInt();
+        boolean valid_seat_num = false;
+        int seat_num_input;
+        while(true){
+            System.out.print("Enter the  seat number you want: ");
+            seat_num_input = scan.nextInt();
+            for(int i=0; i<select_room.seats_int.size(); i++){
+                if(select_room.seats_int.get(i)==seat_num_input){
+                    valid_seat_num = true;
+                }
+            }
+
+            if(valid_seat_num){
+                break;
+            }
+            else{
+                System.out.println("There is no this seat number available. Enter the valid seat number which displayed.");
+            }
+        }
+        
 
 
         reserve_the_seats reserve_seat = new reserve_the_seats(seat_num_input,select_room);
