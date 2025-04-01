@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 class Rooms{
     String room_number;
@@ -12,6 +14,33 @@ class Rooms{
         this.total_seats = total_seats;
         this.available_seats = available_seats;
         this.seats_int = seats_int;
+    }
+}
+
+class student_details{
+    String index_number;
+    Rooms select_room;
+    int seat_num_input;
+
+    student_details(String index_number, Rooms select_room,int seat_num_input){
+        this.index_number=index_number;
+        this.select_room=select_room;
+        this.seat_num_input=seat_num_input;
+    }
+
+    public void update_student_details(){
+        String student_file = "student.csv";
+        boolean file_exist = new File(student_file).exists();
+        try(BufferedWriter bw  = new BufferedWriter(new FileWriter(student_file,true))){
+            if(!file_exist){
+                bw.write("Student index number,Room number,Seat number,In time, out time\n");
+            }
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            bw.write(this.index_number+","+this.select_room.room_number+","+this.seat_num_input+","+timestamp+"\n");
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
     }
 }
 
@@ -35,9 +64,12 @@ class reserve_the_seats{
                 String[] details = line.split(",");
                 if(this.select_room.room_number.equalsIgnoreCase(details[0])){
                     this.select_room.seats_int.remove(Integer.valueOf(this.seat_num_input));
-                    String seats_update = " ";
+                    String seats_update = "";
                     for(int seat_num: this.select_room.seats_int){
-                        seats_update = seats_update + String.valueOf(seat_num);
+                        seats_update = seats_update + String.valueOf(seat_num)+":";
+                    }
+                    if(!seats_update.isEmpty()){
+                        seats_update = seats_update.substring(0,seats_update.length()-1);
                     }
                     details[3] = seats_update;
                 }
@@ -112,6 +144,12 @@ public class studyroom{
 
         reserve_the_seats reserve_seat = new reserve_the_seats(seat_num_input,select_room);
         reserve_seat.remove_seats();
+        scan.nextLine();
+        System.out.print("Enter the index number: ");
+        String index_number = scan.nextLine();
+
+        student_details student = new student_details(index_number,select_room,seat_num_input);
+        student.update_student_details();
         
     }
 
