@@ -33,7 +33,7 @@ class student_details{
         boolean file_exist = new File(student_file).exists();
         try(BufferedWriter bw  = new BufferedWriter(new FileWriter(student_file,true))){
             if(!file_exist){
-                bw.write("Student index number,Room number,Seat number,In time\n");
+                bw.write("Student index number,Room number,Seat number,In time,out time\n");
             }
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             bw.write(this.index_number+","+this.select_room.room_number+","+this.seat_num_input+","+timestamp+"\n");
@@ -182,7 +182,7 @@ public class studyroom{
 
 
             String student_file = "student.csv";
-            String student_file_final ="studentfinal.csv";
+            
             
             List<String> lines = new ArrayList<>();
             List<String> new_student_list = new ArrayList<>();
@@ -193,7 +193,8 @@ public class studyroom{
                 while((line=br.readLine())!=null){
                     String[] details = line.split(",");
                     if(input_index_release.equalsIgnoreCase(details[0]) && room_number.equalsIgnoreCase(details[1]) && seat_num.equalsIgnoreCase(details[2])){
-                        new_append = String.join(",",details);
+                        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                        lines.add(String.join(",",details)+","+timestamp);
                     }
                     else{
                         lines.add(String.join(",",details));
@@ -203,14 +204,12 @@ public class studyroom{
             catch(IOException e){
                 System.out.println(e.getMessage());
             }
-
-            boolean file_exist = new File(student_file_final).exists();
-            try(BufferedWriter bw = new BufferedWriter(new FileWriter(student_file_final,true))){
-                if(!file_exist){
-                    bw.write("Student index number,Room number,Seat number,In time, out time\n");
+            
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter(student_file))){
+                bw.write("Student index number,Room number,Seat number,In time, out time\n");
+                for(String line: lines){
+                    bw.write(line+"\n");
                 }
-                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                bw.write(new_append+","+timestamp+"\n");
             }
             catch(IOException e){
                 System.out.println(e.getMessage());
