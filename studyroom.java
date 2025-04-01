@@ -15,6 +15,54 @@ class Rooms{
     }
 }
 
+class reserve_the_seats{
+    int seat_num_input;
+    Rooms select_room;
+
+    reserve_the_seats(int seat_num_input, Rooms select_room){
+        this.seat_num_input=seat_num_input;
+        this.select_room=select_room;
+    }
+
+    public void remove_seats(){
+        String filename = "study.csv";
+        List<String> lines = new ArrayList<>();
+
+        try(BufferedReader br  = new BufferedReader(new FileReader(filename))){
+            String line;
+            br.readLine();
+            while((line=br.readLine())!=null){
+                String[] details = line.split(",");
+                if(this.select_room.room_number.equalsIgnoreCase(details[0])){
+                    this.select_room.seats_int.remove(Integer.valueOf(this.seat_num_input));
+                    String seats_update = " ";
+                    for(int seat_num: this.select_room.seats_int){
+                        seats_update = seats_update + String.valueOf(seat_num);
+                    }
+                    details[3] = seats_update;
+                }
+                lines.add(String.join(",",details));
+            }
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+
+        try(BufferedWriter bw = new BufferedWriter(new FileWriter(filename))){
+            bw.write("room number,total seats,available seats,chair numbers");
+            bw.newLine();
+            for(String write_line: lines){
+                bw.write(write_line);
+                bw.newLine();
+            }
+            
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
 public class studyroom{
     private static final String filename = "study.csv";
     private static Map<String,Rooms> roomsmap = new HashMap<>();
@@ -26,11 +74,12 @@ public class studyroom{
 
         System.out.println("WELCOME TO THE UNIVERSITY OF MORATUWA LIBRARY.");
 
+        Rooms select_room = null;
         while(true){
             System.out.print("which number study room you want: Enter 1 to 10: ");
             String input_room_num = scan.nextLine();
-            Rooms select_room = roomsmap.get(input_room_num);
-            if(select_room.total_seats>select_room.available_seats){
+            select_room = roomsmap.get(input_room_num);
+            if(select_room.total_seats>=select_room.available_seats){
                 System.out.print("Here are the seat numbers available.");
                 for(int j=0; j<select_room.seats_int.size(); j++){
                     System.out.print(select_room.seats_int.get(j)+" ");
@@ -57,7 +106,12 @@ public class studyroom{
             }
 
         }
-        System.out.println("selsected the room and seat.");
+        System.out.print("Enter the  seat number you want: ");
+        int seat_num_input = scan.nextInt();
+
+
+        reserve_the_seats reserve_seat = new reserve_the_seats(seat_num_input,select_room);
+        reserve_seat.remove_seats();
         
     }
 
