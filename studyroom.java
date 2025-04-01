@@ -33,7 +33,7 @@ class student_details{
         boolean file_exist = new File(student_file).exists();
         try(BufferedWriter bw  = new BufferedWriter(new FileWriter(student_file,true))){
             if(!file_exist){
-                bw.write("Student index number,Room number,Seat number,In time, out time\n");
+                bw.write("Student index number,Room number,Seat number,In time\n");
             }
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             bw.write(this.index_number+","+this.select_room.room_number+","+this.seat_num_input+","+timestamp+"\n");
@@ -102,74 +102,124 @@ public class studyroom{
     private static Map<String,Rooms> roomsmap = new HashMap<>();
 
     public static void main(String args[]){
-        loadthedetails();
-
         Scanner scan = new Scanner(System.in);
-
         System.out.println("WELCOME TO THE UNIVERSITY OF MORATUWA LIBRARY.");
-
-        Rooms select_room = null;
-        while(true){
-            System.out.print("which number study room you want: Enter 1 to 10: ");
-            String input_room_num = scan.nextLine();
-            select_room = roomsmap.get(input_room_num);
-            if(select_room.total_seats>=select_room.available_seats){
-                System.out.print("Here are the seat numbers available.");
-                for(int j=0; j<select_room.seats_int.size(); j++){
-                    System.out.print(select_room.seats_int.get(j)+" ");
+        System.out.print("Reserve the seat or Release the seat: reserve:1  release:0  : ");
+        String reserve_release = scan.nextLine();
+        if(reserve_release.equalsIgnoreCase("1")){
+            loadthedetails();
+            Rooms select_room = null;
+            while(true){
+                System.out.print("which number study room you want: Enter 1 to 10: ");
+                String input_room_num = scan.nextLine();
+                select_room = roomsmap.get(input_room_num);
+                if(select_room.total_seats>=select_room.available_seats){
+                    System.out.print("Here are the seat numbers available.");
+                    for(int j=0; j<select_room.seats_int.size(); j++){
+                        System.out.print(select_room.seats_int.get(j)+" ");
+                    }
+                    System.out.print("Do you want to pick a seat? yes/no: ");
+                    String yes_or_no = scan.nextLine();
+                    if(yes_or_no.equalsIgnoreCase("yes")){
+                        break;
+                    }
+                    else{
+                        System.out.print("Do you want to exit or take a another room? if exit yes: take another room no: ");
+                        String exit_or_room = scan.nextLine();
+                        if(exit_or_room.equalsIgnoreCase("yes")){
+                            return;
+                        }
+                        else{
+                            continue;
+                        }
+                    }
+                    
                 }
-                System.out.print("Do you want to pick a seat? yes/no: ");
-                String yes_or_no = scan.nextLine();
-                if(yes_or_no.equalsIgnoreCase("yes")){
+                else{
+                    System.out.println("There is no available seats in this room. you can pick another room.");
+                }
+
+            }
+            boolean valid_seat_num = false;
+            int seat_num_input;
+            while(true){
+                System.out.print("Enter the  seat number you want: ");
+                seat_num_input = scan.nextInt();
+                for(int i=0; i<select_room.seats_int.size(); i++){
+                    if(select_room.seats_int.get(i)==seat_num_input){
+                        valid_seat_num = true;
+                    }
+                }
+
+                if(valid_seat_num){
                     break;
                 }
                 else{
-                    System.out.print("Do you want to exit or take a another room? if exit yes: take another room no: ");
-                    String exit_or_room = scan.nextLine();
-                    if(exit_or_room.equalsIgnoreCase("yes")){
-                        return;
+                    System.out.println("There is no this seat number available. Enter the valid seat number which displayed.");
+                }
+            }
+            
+
+
+            reserve_the_seats reserve_seat = new reserve_the_seats(seat_num_input,select_room);
+            reserve_seat.remove_seats();
+            scan.nextLine();
+            System.out.print("Enter the index number: ");
+            String index_number = scan.nextLine();
+
+            student_details student = new student_details(index_number,select_room,seat_num_input);
+            student.update_student_details();
+        }
+        else{
+            System.out.print("Enter your index number: ");
+            String input_index_release = scan.nextLine();
+
+            System.out.print("Enter the room number: ");
+            String room_number = scan.nextLine();
+
+            System.out.println("Enter the seat number: ");
+            String seat_num = scan.nextLine();
+
+
+            String student_file = "student.csv";
+            String student_file_final ="studentfinal.csv";
+            
+            List<String> lines = new ArrayList<>();
+            List<String> new_student_list = new ArrayList<>();
+            String new_append = null;
+            try(BufferedReader br = new BufferedReader(new FileReader(student_file))){
+                br.readLine();
+                String line;
+                while((line=br.readLine())!=null){
+                    String[] details = line.split(",");
+                    if(input_index_release.equalsIgnoreCase(details[0]) && room_number.equalsIgnoreCase(details[1]) && seat_num.equalsIgnoreCase(details[2])){
+                        new_append = String.join(",",details);
                     }
                     else{
-                        continue;
+                        lines.add(String.join(",",details));
                     }
                 }
-                
             }
-            else{
-                System.out.println("There is no available seats in this room. you can pick another room.");
+            catch(IOException e){
+                System.out.println(e.getMessage());
             }
 
-        }
-        boolean valid_seat_num = false;
-        int seat_num_input;
-        while(true){
-            System.out.print("Enter the  seat number you want: ");
-            seat_num_input = scan.nextInt();
-            for(int i=0; i<select_room.seats_int.size(); i++){
-                if(select_room.seats_int.get(i)==seat_num_input){
-                    valid_seat_num = true;
+            boolean file_exist = new File(student_file_final).exists();
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter(student_file_final,true))){
+                if(!file_exist){
+                    bw.write("Student index number,Room number,Seat number,In time, out time\n");
                 }
+                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                bw.write(new_append+","+timestamp+"\n");
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
             }
 
-            if(valid_seat_num){
-                break;
-            }
-            else{
-                System.out.println("There is no this seat number available. Enter the valid seat number which displayed.");
-            }
+            ///release the seat to study csv
         }
-        
 
 
-        reserve_the_seats reserve_seat = new reserve_the_seats(seat_num_input,select_room);
-        reserve_seat.remove_seats();
-        scan.nextLine();
-        System.out.print("Enter the index number: ");
-        String index_number = scan.nextLine();
-
-        student_details student = new student_details(index_number,select_room,seat_num_input);
-        student.update_student_details();
-        
     }
 
     private static void loadthedetails(){
