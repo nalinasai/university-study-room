@@ -1,3 +1,5 @@
+//update the available seats count
+
 import java.io.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -215,7 +217,40 @@ public class studyroom{
                 System.out.println(e.getMessage());
             }
 
-            ///release the seat to study csv
+            String filename = "study.csv";
+            List<String> new_lines = new ArrayList<>();
+            try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+                br.readLine();
+                String line;
+                while((line=br.readLine())!=null){
+                    String[] details = line.split(",");
+                    if(details[0].equalsIgnoreCase(room_number)){
+                        List<String> seat_list = new ArrayList<>(Arrays.asList(details[3].split(":")));
+                        seat_list.add(seat_num);
+                        String details_3_str = String.join(":",seat_list);
+                        details[3] = details_3_str;
+                        new_lines.add(String.join(",",details));
+
+                    }
+                    else{
+                        new_lines.add(line);
+                    }
+                }
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter(filename))){
+                bw.write("room number,total seats,available seats,chair numbers\n");
+                for(String li: new_lines){
+                    bw.write(li+"\n");
+                }
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+
         }
 
 
@@ -248,5 +283,3 @@ public class studyroom{
         }
     }
 }
-
-//room number,total seats,available seats,chair numbers
