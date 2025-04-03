@@ -1,16 +1,19 @@
-//update the available seats count
+
 
 import java.io.*;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
+//class representing a study room with room number, total seatts, available seats, and seat numbers.
 class Rooms{
     String room_number;
     int total_seats;
     int available_seats;
     List<Integer> seats_int;
 
+    //constuctor to initialize the room details
     Rooms(String room_number,int total_seats,int available_seats,List<Integer> seats_int){
         this.room_number = room_number;
         this.total_seats = total_seats;
@@ -19,24 +22,29 @@ class Rooms{
     }
 }
 
+//class to store student details when they reserve a seat.
 class student_details{
     String index_number;
     Rooms select_room;
     int seat_num_input;
 
+    //constructor to initialize the student details.
     student_details(String index_number, Rooms select_room,int seat_num_input){
         this.index_number=index_number;
         this.select_room=select_room;
         this.seat_num_input=seat_num_input;
     }
 
+    //method to upadte studennt details in the "student.csv" file
     public void update_student_details(){
         String student_file = "student.csv";
         boolean file_exist = new File(student_file).exists();
         try(BufferedWriter bw  = new BufferedWriter(new FileWriter(student_file,true))){
+            //if file dosen't exist, write the header
             if(!file_exist){
                 bw.write("Student index number,Room number,Seat number,In time,out time\n");
             }
+            //get current timestamp for seat reservation time
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             bw.write(this.index_number+","+this.select_room.room_number+","+this.seat_num_input+","+timestamp+"\n");
         }
@@ -48,26 +56,33 @@ class student_details{
     }
 }
 
+//class to handle seat reservation and update the available seats in the study room.
 class reserve_the_seats{
     int seat_num_input;
     Rooms select_room;
 
+    //constructor to initialize seat reservation details.
     reserve_the_seats(int seat_num_input, Rooms select_room){
         this.seat_num_input=seat_num_input;
         this.select_room=select_room;
     }
 
+    //methos to remove a reserved seat from available seats in "study.csv" 
     public void remove_seats(){
         String filename = "study.csv";
         List<String> lines = new ArrayList<>();
 
         try(BufferedReader br  = new BufferedReader(new FileReader(filename))){
             String line;
-            br.readLine();
+            br.readLine();  //skip header line
             while((line=br.readLine())!=null){
                 String[] details = line.split(",");
+                //check if the selected room matches
                 if(this.select_room.room_number.equalsIgnoreCase(details[0])){
+                    //remove the reserved seat from available list
                     this.select_room.seats_int.remove(Integer.valueOf(this.seat_num_input));
+
+                    //convert updated seats list to a string
                     String seats_update = "";
                     for(int seat_num: this.select_room.seats_int){
                         seats_update = seats_update + String.valueOf(seat_num)+":";
@@ -76,6 +91,8 @@ class reserve_the_seats{
                         seats_update = seats_update.substring(0,seats_update.length()-1);
                     }
                     details[3] = seats_update;
+
+                    //update available seats count
                     int update_available = Integer.parseInt(details[2]) - 1;
                     details[2] = String.valueOf(update_available);
                 }
@@ -86,6 +103,7 @@ class reserve_the_seats{
             System.out.println(e.getMessage());
         }
 
+        //write updated room details back to "study.csv".
         try(BufferedWriter bw = new BufferedWriter(new FileWriter(filename))){
             bw.write("room number,total seats,available seats,chair numbers");
             bw.newLine();
@@ -101,6 +119,7 @@ class reserve_the_seats{
     }
 }
 
+//main class handling the seat reservation system
 public class studyroom{
     private static final String filename = "study.csv";
     private static Map<String,Rooms> roomsmap = new HashMap<>();
@@ -111,6 +130,7 @@ public class studyroom{
         System.out.print("Reserve the seat or Release the seat: reserve:1  release:0  : ");
         String reserve_release = scan.nextLine();
         if(reserve_release.equalsIgnoreCase("1")){
+            //load room details fromm the csv file
             loadthedetails();
             Rooms select_room = null;
             while(true){
@@ -144,6 +164,8 @@ public class studyroom{
                 }
 
             }
+
+            //user selaects a seat
             boolean valid_seat_num = false;
             int seat_num_input;
             while(true){
@@ -164,7 +186,7 @@ public class studyroom{
             }
             
 
-
+            //reserve the seat and updated records
             reserve_the_seats reserve_seat = new reserve_the_seats(seat_num_input,select_room);
             reserve_seat.remove_seats();
             scan.nextLine();
@@ -175,6 +197,8 @@ public class studyroom{
             student.update_student_details();
         }
         else{
+
+            //handle seat release process
             System.out.print("Enter your index number: ");
             String input_index_release = scan.nextLine();
 
@@ -260,6 +284,7 @@ public class studyroom{
 
     }
 
+    //method to load room details from "study.csv"
     private static void loadthedetails(){
         
         try(BufferedReader bw = new BufferedReader(new FileReader(filename))){
