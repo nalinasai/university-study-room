@@ -76,6 +76,8 @@ class reserve_the_seats{
                         seats_update = seats_update.substring(0,seats_update.length()-1);
                     }
                     details[3] = seats_update;
+                    int update_available = Integer.parseInt(details[2]) - 1;
+                    details[2] = String.valueOf(update_available);
                 }
                 lines.add(String.join(",",details));
             }
@@ -179,7 +181,7 @@ public class studyroom{
             System.out.print("Enter the room number: ");
             String room_number = scan.nextLine();
 
-            System.out.println("Enter the seat number: ");
+            System.out.print("Enter the seat number: ");
             String seat_num = scan.nextLine();
 
 
@@ -229,6 +231,8 @@ public class studyroom{
                         seat_list.add(seat_num);
                         String details_3_str = String.join(":",seat_list);
                         details[3] = details_3_str;
+                        int update_available = Integer.parseInt(details[2]) + 1;
+                        details[2] = String.valueOf(update_available);
                         new_lines.add(String.join(",",details));
 
                     }
